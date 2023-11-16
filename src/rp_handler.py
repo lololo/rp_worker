@@ -4,7 +4,7 @@ import runpod
 import requests
 from requests.adapters import HTTPAdapter, Retry
 
-LOCAL_URL = "http://127.0.0.1:3000/sdapi/v1"
+LOCAL_URL = "http://127.0.0.1:7860/sdapi/v1"
 
 automatic_session = requests.Session()
 retries = Retry(total=10, backoff_factor=0.1, status_forcelist=[502, 503, 504])
@@ -39,6 +39,19 @@ def run_inference(inference_request):
     return response.json()
 
 
+def run(inference_request, method_name, http_method):
+    print('------------------- RUN --------------------')
+    print(inference_request)
+    print(method_name)
+    print(http_method)
+    if http_method == 'POST':
+        # response = automatic_session.post(url=f'{LOCAL_URL}/ 
+        response = automatic_session.post(url=f'{LOCAL_URL}/{method_name}', json=inference_request, timeout=600)
+        return response.json() 
+    else:
+        response = automatic_session.get(url=f'{LOCAL_URL}/{method_name}', json=inference_request, timeout=600)
+        return response.json()  
+
 # ---------------------------------------------------------------------------- #
 #                                RunPod Handler                                #
 # ---------------------------------------------------------------------------- #
@@ -46,8 +59,12 @@ def handler(event):
     '''
     This is the handler function that will be called by the serverless.
     '''
+    print('----------------')
+    print(event)
 
-    json = run_inference(event["input"])
+    json = run(event["input"], event["input"]["name"], event["input"]["http"])
+
+
 
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     return json
